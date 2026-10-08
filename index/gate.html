@@ -10,7 +10,793 @@
     var passed = false;
     try { passed = sessionStorage.getItem("quiz-pass") === "1"; } catch (e) {}
     if (!passed) {
+      document.documentElement.style.visibility = "hidden";<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동화 명대사 암호 퀴즈</title>
+<script>
+  // 번호 입력 페이지(gate.html)를 통과하지 않았다면 그쪽으로 돌려보냄
+  (function () {
+    var passed = false;
+    try { passed = sessionStorage.getItem("quiz-pass") === "1"; } catch (e) {}
+    if (!passed) {
       document.documentElement.style.visibility = "hidden";
+      location.replace("gate.html");
+    }
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1c2455;
+    --ink-2: #2f3b86;
+    --mist: #e8ebf8;
+    --paper: #fffdf9;
+    --stub: #f0f2fc;
+    --line: #d3d8f0;
+    --muted: #5b6492;
+    --moon: #ffc94d;
+    --mint: #2a9d78;
+    --mint-soft: #dcf2e8;
+    --rose: #d94f6b;
+    --display: "Jua", "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    --body: "Gowun Dodum", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    --quote: "Gowun Batang", "Batang", "AppleMyungjo", serif;
+    --type: "Courier Prime", "Courier New", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--mist);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  /* ───── 상단 띠 ───── */
+  .hero {
+    background-color: var(--ink);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='220'%3E%3Cg fill='white' fill-opacity='.075' font-family='serif' font-size='30'%3E%3Ctext x='18' y='52' transform='rotate(-14 18 52)'%3E가%3C/text%3E%3Ctext x='120' y='34' transform='rotate(9 120 34)'%3ED%3C/text%3E%3Ctext x='214' y='70' transform='rotate(-6 214 70)'%3E듸%3C/text%3E%3Ctext x='62' y='128' transform='rotate(12 62 128)'%3EQ%3C/text%3E%3Ctext x='168' y='150' transform='rotate(-10 168 150)'%3E솔%3C/text%3E%3Ctext x='254' y='196' transform='rotate(7 254 196)'%3Ek%3C/text%3E%3Ctext x='24' y='202' transform='rotate(-8 24 202)'%3E밤%3C/text%3E%3Ctext x='112' y='206' transform='rotate(14 112 206)'%3Ez%3C/text%3E%3C/g%3E%3C/svg%3E");
+    color: #fff;
+    padding: 56px 16px 52px;
+  }
+  .hero-in { max-width: 960px; margin: 0 auto; }
+  .hero h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.1rem, 6.4vw, 3.6rem);
+    line-height: 1.15;
+    letter-spacing: .01em;
+  }
+  .hero h1 .mix { color: var(--moon); }
+  .hero h1 .done { color: #fff; }
+  .hero p { margin: 14px 0 0; color: #c9cffa; font-size: 1.1rem; }
+
+  /* ───── 본문 ───── */
+  .wrap { max-width: 960px; margin: 0 auto; padding: 30px 16px 72px; }
+
+  .intro { margin: 0 0 22px; }
+  .rules { margin: 0; padding: 0; display: grid; gap: 6px; }
+  .rules div { display: flex; gap: 12px; align-items: baseline; }
+  .rules dt {
+    flex: none; min-width: 3.2em;
+    font-family: var(--display); color: var(--ink-2);
+  }
+  .rules dd { margin: 0; }
+  .note { margin: 10px 0 0; font-size: .94rem; color: var(--muted); }
+
+  details.chart { margin-top: 14px; }
+  details.chart summary {
+    display: inline-block; cursor: pointer;
+    color: var(--ink-2); font-family: var(--display);
+    border-bottom: 2px dotted var(--ink-2);
+  }
+  details.chart summary:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
+  .chart-scroll { overflow-x: auto; margin-top: 12px; padding-bottom: 4px; }
+  .alpha {
+    display: grid;
+    grid-template-columns: 3.4em repeat(26, minmax(1.7em, 1fr));
+    min-width: 760px;
+    font-family: var(--type); font-size: .95rem; text-align: center;
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  .alpha span { padding: 5px 0; }
+  .alpha .lab { font-family: var(--body); font-size: .85rem; text-align: left; padding-left: 10px; align-self: center; }
+  .alpha .top { background: var(--paper); }
+  .alpha .bot { background: var(--ink); color: #fff; }
+  .alpha .bot.lab { color: #c9cffa; }
+
+  /* ───── 문제 표 ───── */
+  .sheet { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 12px; }
+  .sheet .c-no { width: 84px; }
+  .sheet .c-ans { width: 44%; }
+  .sheet thead th {
+    text-align: left; font-weight: 400; font-size: .92rem;
+    color: var(--muted); padding: 0 18px;
+  }
+  .sheet thead th:first-child { text-align: center; padding: 0; }
+
+  .sheet tbody tr {
+    --cell-bg: var(--paper);
+    --cell-line: var(--line);
+    --stub-bg: var(--stub);
+    --stub-ink: var(--ink);
+  }
+  .sheet tbody tr:focus-within { --cell-line: #98a2e2; }
+  .sheet tbody tr.solved {
+    --cell-bg: #f2faf6;
+    --cell-line: #b5e0cf;
+    --stub-bg: var(--mint-soft);
+    --stub-ink: var(--mint);
+  }
+  .sheet td {
+    background: var(--cell-bg);
+    border-top: 1px solid var(--cell-line);
+    border-bottom: 1px solid var(--cell-line);
+    padding: 18px;
+    vertical-align: middle;
+    transition: background-color .2s, border-color .2s;
+  }
+  .sheet td.stub {
+    background: var(--stub-bg);
+    border-left: 1px solid var(--cell-line);
+    border-right: 2px dashed var(--cell-line);
+    border-radius: 16px 0 0 16px;
+    padding: 18px 0;
+    text-align: center;
+    color: var(--stub-ink);
+  }
+  .sheet td.answer-cell {
+    border-right: 1px solid var(--cell-line);
+    border-radius: 0 16px 16px 0;
+  }
+  .no { font-family: var(--display); font-size: 1.7rem; line-height: 1; }
+  .no svg { width: 28px; height: 28px; vertical-align: middle; }
+
+  .cipher { font-size: 1.15rem; line-height: 1.8; letter-spacing: .05em; word-break: keep-all; overflow-wrap: anywhere; }
+  .cipher.latin { font-family: var(--type); font-size: 1rem; line-height: 1.7; letter-spacing: .03em; }
+
+  .answer { display: flex; gap: 8px; align-items: center; }
+  .answer input {
+    flex: 1; min-width: 0; height: 46px;
+    background: #f6f7fd;
+    border: 2px solid #c8cff0;
+    border-radius: 12px;
+    color: var(--ink);
+    padding: 0 14px;
+    font: inherit; font-size: 1.02rem;
+  }
+  .answer input::placeholder { color: #8e97c4; }
+  .answer input:disabled { background: #e3f5ec; border-color: #9fd6bf; color: #17694f; opacity: 1; }
+  .answer button {
+    height: 46px; padding: 0 20px;
+    background: var(--ink); color: #fff;
+    border: 0; border-radius: 12px;
+    font-family: var(--display); font-size: 1.05rem;
+    cursor: pointer; white-space: nowrap;
+    transition: background-color .15s, transform .05s;
+  }
+  .answer button:hover:not(:disabled) { background: var(--ink-2); }
+  .answer button:active:not(:disabled) { transform: translateY(1px); }
+  .answer button:disabled { background: var(--mint); cursor: default; }
+  input:focus-visible, button:focus-visible { outline: 3px solid var(--moon); outline-offset: 2px; }
+  .shake { animation: shake .35s; }
+  @keyframes shake {
+    20% { transform: translateX(-6px); } 40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
+  }
+
+  .state { padding: 36px 20px; text-align: center; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+  .state strong { display: block; margin-bottom: 6px; color: var(--rose); font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
+  .state code { background: var(--stub); padding: 2px 6px; border-radius: 4px; font-family: var(--type); }
+  .state[hidden] { display: none; }
+
+  /* ───── 모달 ───── */
+  .overlay {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(28, 36, 85, .55);
+    backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .overlay[hidden] { display: none; }
+  .modal {
+    width: min(460px, 100%);
+    background: var(--paper);
+    border-radius: 22px;
+    padding: 30px 28px 26px;
+    text-align: center;
+    box-shadow: 0 18px 50px rgba(20, 26, 66, .4);
+    animation: pop .2s ease-out;
+  }
+  .modal .icon {
+    width: 62px; height: 62px; margin: 0 auto 12px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--mint); color: #fff;
+  }
+  .modal.wrong .icon { background: var(--rose); }
+  .modal .icon svg { width: 32px; height: 32px; }
+  .modal h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--mint); }
+  .modal.wrong h2 { color: var(--rose); }
+  .modal .msg { margin: 4px 0 0; color: var(--muted); }
+  .modal .detail { margin-top: 18px; padding: 18px 18px 14px; background: var(--stub); border-radius: 14px; }
+  .modal .detail:empty { display: none; }
+  .modal .quote { margin: 0; font-family: var(--quote); font-size: 1.18rem; line-height: 1.8; text-wrap: balance; color: var(--ink); }
+  .modal .work { margin: 8px 0 0; font-size: .95rem; color: var(--muted); }
+  .modal .work.en { font-style: italic; }
+  .modal .trans { margin: 10px 0 0; padding-top: 10px; border-top: 1px dashed var(--line); font-size: .97rem; color: var(--ink-2); }
+  .modal button {
+    margin-top: 20px; height: 44px; padding: 0 34px;
+    background: var(--ink); color: #fff;
+    border: 0; border-radius: 12px;
+    font-family: var(--display); font-size: 1.05rem; cursor: pointer;
+  }
+  .modal button:hover { background: var(--ink-2); }
+  @keyframes pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* ───── 모바일 ───── */
+  @media (max-width: 680px) {
+    .hero { padding: 40px 16px 36px; }
+    .wrap { padding-top: 24px; }
+    .rules div { flex-direction: column; gap: 0; }
+    .sheet, .sheet tbody { display: block; }
+    .sheet thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .sheet tbody tr {
+      display: grid; grid-template-columns: 54px 1fr;
+      margin-bottom: 12px;
+      background: var(--cell-bg);
+      border: 1px solid var(--cell-line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .sheet td { background: none; border: 0; border-radius: 0; padding: 14px 14px 2px; }
+    .sheet td.stub {
+      grid-row: 1 / span 2;
+      background: var(--stub-bg);
+      border-right: 2px dashed var(--cell-line);
+      padding: 14px 0 0;
+    }
+    .sheet td.cipher-cell { grid-column: 2; }
+    .sheet td.answer-cell { grid-column: 2; padding-bottom: 16px; }
+    .answer { flex-direction: column; align-items: stretch; }
+    .answer input { flex: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .modal, .shake { animation: none; }
+  }
+
+  /* ───── 암호 기법 보기 ───── */
+  .techniques {
+    margin-top: 18px;
+    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .techniques-title {
+    margin: 0 0 10px;
+    color: var(--ink-2);
+    font-family: var(--display);
+    font-size: 1.05rem;
+  }
+  .technique-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .technique-card {
+    padding: 12px 13px;
+    background: var(--stub);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .technique-card strong {
+    display: block;
+    color: var(--ink);
+    font-family: var(--display);
+    font-weight: 400;
+    margin-bottom: 3px;
+  }
+  .technique-card span {
+    display: block;
+    color: var(--muted);
+    font-size: .86rem;
+    line-height: 1.45;
+  }
+
+  .answer-fields {
+    display: grid;
+    gap: 8px;
+  }
+  .answer-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .answer-row label {
+    flex: 0 0 58px;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+  .answer-row input,
+  .answer-row select {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    background: #f6f7fd;
+    border: 2px solid #c8cff0;
+    border-radius: 10px;
+    color: var(--ink);
+    padding: 0 11px;
+    font: inherit;
+    font-size: .94rem;
+  }
+  .answer-row select {
+    cursor: pointer;
+  }
+  .answer-row input:disabled,
+  .answer-row select:disabled {
+    background: #e3f5ec;
+    border-color: #9fd6bf;
+    color: #17694f;
+    opacity: 1;
+  }
+  .answer-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .answer-actions button {
+    flex: 1;
+  }
+  .answer-actions .clear-btn {
+    background: #eef0f9;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .answer-actions .clear-btn:hover {
+    background: #e4e7f5;
+  }
+  .work-hint {
+    color: var(--muted);
+    font-size: .78rem;
+    margin-top: 2px;
+  }
+
+  .modal .method {
+    margin: 8px 0 0;
+    font-family: var(--display);
+    color: var(--mint);
+  }
+
+  @media (max-width: 760px) {
+    .technique-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 680px) {
+    .technique-list { grid-template-columns: 1fr; }
+    .answer-row { align-items: stretch; }
+    .answer-row label { flex-basis: 50px; padding-top: 9px; }
+    .answer-actions { flex-direction: column; }
+  }
+
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <h1 id="title" aria-label="동화 명대사 암호 퀴즈"><span id="title-text" aria-hidden="true">동화 명대사 암호 퀴즈</span></h1>
+    <p id="subtitle">암호를 풀어 동화 속 명대사를 찾아보세요</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="intro" aria-label="푸는 방법">
+    <dl class="rules" id="rules"></dl>
+    <p class="note">띄어쓰기·대소문자·문장부호는 달라도 정답으로 인정돼요. 작품명은 『』 없이 입력해도 됩니다.</p>
+
+    <section class="techniques" aria-label="암호 기법 보기">
+      <h2 class="techniques-title">암호화 기법 보기</h2>
+      <div class="technique-list" id="technique-list"></div>
+    </section>
+
+    <details class="chart" id="chart" hidden>
+      <summary>시저 암호 표 보기</summary>
+      <div class="chart-scroll"><div class="alpha" id="alpha" role="img" aria-label="윗줄 알파벳이 아랫줄 알파벳으로 바뀌는 시저 암호 표"></div></div>
+    </details>
+  </section>
+
+  <main>
+    <table class="sheet">
+      <colgroup><col class="c-no"><col><col class="c-ans"></colgroup>
+      <thead>
+        <tr><th>번호</th><th>암호</th><th>정답 입력</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="state" id="state">문제를 불러오는 중…</div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="icon" id="modal-icon" aria-hidden="true"></div>
+    <h2 id="modal-title"></h2>
+    <p class="msg" id="modal-msg"></p>
+    <div id="modal-detail" class="detail"></div>
+    <button type="button" id="modal-close">확인</button>
+  </div>
+</div>
+
+<script>
+const ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_NG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+// 공백·문장부호·대소문자 차이는 무시하고 비교
+const normalize = s => s.normalize("NFC").toLowerCase().replace(/[\s\p{P}\p{S}]/gu, "");
+
+function normalizeWork(s) {
+  return normalize(String(s || "").replace(/^『|』$/g, ""));
+}
+
+function getTechniqueLabel(id) {
+  const item = (window.quizTechniques || []).find(t => t.id === id);
+  return item ? item.label : id;
+}
+
+const $ = id => document.getElementById(id);
+const rowsEl = $("rows"), stateEl = $("state");
+const overlay = $("overlay"), modal = $("modal");
+let lastFocus = null;
+
+/* ── 제목: 섞인 글자가 제자리를 찾아가는 연출 (애너그램 풀이) ── */
+let titleTimer = null;
+function unscrambleTitle() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const el = $("title-text");
+  const target = [...el.textContent];
+  const slots = target.map((c, i) => i).filter(i => target[i] !== " ");
+  if (slots.length < 3) return;
+
+  const cur = target.slice();
+  const letters = slots.map(i => target[i]);
+  for (let n = 0; n < 20; n++) {               // 원문과 다르게 섞기
+    for (let i = letters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [letters[i], letters[j]] = [letters[j], letters[i]];
+    }
+    if (letters.some((c, k) => c !== target[slots[k]])) break;
+  }
+  slots.forEach((pos, k) => { cur[pos] = letters[k]; });
+
+  const paint = fixed => {
+    el.textContent = "";
+    target.forEach((_, i) => {
+      const s = document.createElement("span");
+      s.textContent = cur[i];
+      s.className = target[i] === " " || slots.indexOf(i) < fixed ? "done" : "mix";
+      el.appendChild(s);
+    });
+  };
+  let k = 0;
+  paint(0);
+  titleTimer = setInterval(() => {
+    const pos = slots[k];
+    const j = slots.find(p => slots.indexOf(p) >= k && cur[p] === target[pos]);
+    [cur[pos], cur[j]] = [cur[j], cur[pos]];
+    k++;
+    paint(k);
+    if (k >= slots.length) {
+      clearInterval(titleTimer);
+      titleTimer = null;
+      el.textContent = target.join("");
+    }
+  }, 95);
+}
+
+/* ── 시저 암호 표 ── */
+function buildAlpha(shift) {
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const box = $("alpha");
+  box.textContent = "";
+  const row = (label, letters, cls) => {
+    const l = document.createElement("span");
+    l.className = "lab " + cls;
+    l.textContent = label;
+    box.appendChild(l);
+    for (const c of letters) {
+      const s = document.createElement("span");
+      s.className = cls;
+      s.textContent = c;
+      box.appendChild(s);
+    }
+  };
+  row("원래", A, "top");
+  row("암호", A.slice(shift) + A.slice(0, shift), "bot");
+  $("chart").hidden = false;
+}
+
+/* ── 모달 ── */
+function openModal(ok, item, result = {}) {
+  modal.classList.toggle("wrong", !ok);
+  $("modal-icon").innerHTML = ok ? ICON_OK : ICON_NG;
+  $("modal-title").textContent = ok ? "정답입니다!" : "오답입니다";
+  $("modal-msg").textContent = ok
+    ? "복호화 문장, 작품명, 암호 기법을 모두 정확히 맞혔어요."
+    : "복호화 문장·작품명·암호 기법을 모두 확인해 보세요.";
+
+  const detail = $("modal-detail");
+  detail.textContent = "";
+  if (ok) {
+    const q = document.createElement("p");
+    q.className = "quote";
+    q.textContent = item.decrypted;
+    const w = document.createElement("p");
+    w.className = "work" + (item.language === "en" ? " en" : "");
+    w.textContent = item.language === "en" ? item.work : `『${item.work}』`;
+
+    const m = document.createElement("p");
+    m.className = "method";
+    m.textContent = `암호 기법: ${getTechniqueLabel(item.method)}`;
+
+    detail.append(q, w, m);
+    if (item.translation) {
+      const t = document.createElement("p");
+      t.className = "trans";
+      t.textContent = item.translation;
+      detail.appendChild(t);
+    }
+  }
+  overlay.hidden = false;
+  $("modal-close").focus();
+}
+
+function closeModal() {
+  overlay.hidden = true;
+  if (lastFocus) lastFocus.focus();
+}
+
+function check(item, tr, answerInput, workInput, methodSelect, btn, no) {
+  if (!normalize(answerInput.value) || !normalizeWork(workInput.value) || !methodSelect.value) {
+    if (!normalize(answerInput.value)) answerInput.focus();
+    else if (!normalizeWork(workInput.value)) workInput.focus();
+    else methodSelect.focus();
+    return;
+  }
+
+  lastFocus = answerInput;
+
+  const answerOk = normalize(answerInput.value) === normalize(item.decrypted);
+  const workOk = normalizeWork(workInput.value) === normalizeWork(item.work);
+  const methodOk = methodSelect.value === item.method;
+  const ok = answerOk && workOk && methodOk;
+
+  if (ok) {
+    tr.classList.add("solved");
+    answerInput.value = item.decrypted;
+    workInput.value = item.work;
+    methodSelect.value = item.method;
+
+    answerInput.disabled = true;
+    workInput.disabled = true;
+    methodSelect.disabled = true;
+    btn.disabled = true;
+
+    no.innerHTML = ICON_OK;
+    lastFocus = null;
+  } else {
+    answerInput.classList.remove("shake");
+    workInput.classList.remove("shake");
+    methodSelect.classList.remove("shake");
+    void answerInput.offsetWidth;
+    answerInput.classList.add("shake");
+    workInput.classList.add("shake");
+    methodSelect.classList.add("shake");
+  }
+
+  openModal(ok, item, { answerOk, workOk, methodOk });
+}
+
+/* ── 문제 표 ── */
+function render(data) {
+  rowsEl.textContent = "";
+  stateEl.hidden = false;
+  document.title = data.title || document.title;
+  if (data.subtitle) $("subtitle").textContent = data.subtitle;
+  if (data.title && data.title !== $("title").getAttribute("aria-label")) {
+    clearInterval(titleTimer);
+    $("title").setAttribute("aria-label", data.title);
+    $("title-text").textContent = data.title;
+  }
+
+  const rules = $("rules");
+  rules.textContent = "";
+  for (const [label, text] of [["한글", data.rules?.korean], ["영문", data.rules?.english]]) {
+    if (!text) continue;
+    const row = document.createElement("div");
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = text;
+    row.append(dt, dd);
+    rules.appendChild(row);
+  }
+
+  window.quizTechniques = Array.isArray(data.techniques) ? data.techniques : [];
+
+  const techniqueList = $("technique-list");
+  techniqueList.textContent = "";
+
+  window.quizTechniques.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "technique-card";
+
+    const strong = document.createElement("strong");
+    strong.textContent = t.label;
+
+    const span = document.createElement("span");
+    span.textContent = String(t.detail || "").replace("{shift}", data.rules?.caesar_shift ?? data.items.find(it => it.shift)?.shift ?? 3);
+
+    card.append(strong, span);
+    techniqueList.appendChild(card);
+  });
+
+  if (data.items.some(it => it.method === "caesar")) {
+    buildAlpha(data.rules?.caesar_shift ?? data.items.find(it => it.shift)?.shift ?? 3);
+  }
+
+  data.items.forEach((item, i) => {
+    const n = item.id ?? i + 1;
+    const tr = document.createElement("tr");
+
+    const tdNo = document.createElement("td");
+    tdNo.className = "stub";
+    const no = document.createElement("span");
+    no.className = "no";
+    no.textContent = n;
+    tdNo.appendChild(no);
+
+    const tdCipher = document.createElement("td");
+    tdCipher.className = "cipher-cell";
+    const cipher = document.createElement("div");
+    cipher.className = "cipher" + (item.language === "en" ? " latin" : "");
+    cipher.textContent = item.encrypted;
+    tdCipher.appendChild(cipher);
+
+    const tdAns = document.createElement("td");
+    tdAns.className = "answer-cell";
+
+    const fields = document.createElement("div");
+    fields.className = "answer-fields";
+
+    // 복호화 문장
+    const answerRow = document.createElement("div");
+    answerRow.className = "answer-row";
+    const answerLabel = document.createElement("label");
+    answerLabel.textContent = "문장";
+    const answerInput = document.createElement("input");
+    answerInput.type = "text";
+    answerInput.placeholder = "복호화한 문장";
+    answerInput.autocomplete = "off";
+    answerInput.spellcheck = false;
+    answerInput.setAttribute("aria-label", `${n}번 복호화 문장 입력`);
+    answerRow.append(answerLabel, answerInput);
+
+    // 작품명
+    const workRow = document.createElement("div");
+    workRow.className = "answer-row";
+    const workLabel = document.createElement("label");
+    workLabel.textContent = "작품";
+    const workInput = document.createElement("input");
+    workInput.type = "text";
+    workInput.placeholder = "작품명";
+    workInput.autocomplete = "off";
+    workInput.spellcheck = false;
+    workInput.setAttribute("aria-label", `${n}번 작품명 입력`);
+
+    const workHint = document.createElement("div");
+    workHint.className = "work-hint";
+    workHint.textContent = "예: 어린 왕자 / The Little Prince / 아낌없이 주는 나무";
+    workRow.append(workLabel, workInput);
+
+    // 암호 기법
+    const methodRow = document.createElement("div");
+    methodRow.className = "answer-row";
+    const methodLabel = document.createElement("label");
+    methodLabel.textContent = "기법";
+    const methodSelect = document.createElement("select");
+    methodSelect.setAttribute("aria-label", `${n}번 암호 기법 선택`);
+
+    const emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "암호 기법 선택";
+    methodSelect.appendChild(emptyOpt);
+
+    window.quizTechniques.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.id;
+      opt.textContent = t.label;
+      methodSelect.appendChild(opt);
+    });
+    methodRow.append(methodLabel, methodSelect);
+
+    const actions = document.createElement("div");
+    actions.className = "answer-actions";
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "확인";
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "clear-btn";
+    clearBtn.textContent = "지우기";
+    clearBtn.addEventListener("click", () => {
+      if (answerInput.disabled) return;
+      answerInput.value = "";
+      workInput.value = "";
+      methodSelect.value = "";
+      answerInput.focus();
+    });
+
+    btn.addEventListener("click", () =>
+      check(item, tr, answerInput, workInput, methodSelect, btn, no)
+    );
+
+    [answerInput, workInput, methodSelect].forEach(el => {
+      el.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.isComposing) {
+          e.preventDefault();
+          check(item, tr, answerInput, workInput, methodSelect, btn, no);
+        }
+      });
+    });
+
+    actions.append(btn, clearBtn);
+    fields.append(answerRow, workRow, workHint, methodRow, actions);
+    tdAns.appendChild(fields);
+
+    tr.append(tdNo, tdCipher, tdAns);
+    rowsEl.appendChild(tr);
+  });
+
+  stateEl.hidden = true;
+}
+
+function showError(err) {
+  stateEl.textContent = "";
+  const s = document.createElement("strong");
+  s.textContent = "문제를 불러오지 못했어요.";
+  const p = document.createElement("div");
+  p.append("index.html과 같은 위치의 ");
+  const c = document.createElement("code");
+  c.textContent = "https://bymaro.github.io/index/data.json";
+  p.append(c, " 파일을 확인해 주세요. 파일을 더블클릭해서 열면 브라우저가 막으니, GitHub Pages나 로컬 서버(");
+  const c2 = document.createElement("code");
+  c2.textContent = "python -m http.server";
+  p.append(c2, ")로 열어 주세요.");
+  stateEl.append(s, p);
+  console.error(err);
+}
+
+unscrambleTitle();
+fetch("data.json", { cache: "no-cache" })
+  .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+  .then(render)
+  .catch(showError);
+
+$("modal-close").addEventListener("click", closeModal);
+overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !overlay.hidden) closeModal(); });
+</script>
+</body>
+</html>
       location.replace("gate.html");
     }
   })();
