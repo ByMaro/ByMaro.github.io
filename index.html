@@ -3,21 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>동화 명대사 암호 퀴즈</title>
-<script>
-  // 번호 입력 페이지(gate.html)를 통과하지 않았다면 그쪽으로 돌려보냄
-  (function () {
-    var passed = false;
-    try { passed = sessionStorage.getItem("quiz-pass") === "1"; } catch (e) {}
-    if (!passed) {
-      document.documentElement.style.visibility = "hidden";
-      location.replace("gate.html");
-    }
-  })();
-</script>
+<title>자료 확인</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
 <style>
   :root {
     --ink: #1c2455;
@@ -29,11 +18,9 @@
     --muted: #5b6492;
     --moon: #ffc94d;
     --mint: #2a9d78;
-    --mint-soft: #dcf2e8;
     --rose: #d94f6b;
     --display: "Jua", "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
     --body: "Gowun Dodum", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-    --quote: "Gowun Batang", "Batang", "AppleMyungjo", serif;
     --type: "Courier Prime", "Courier New", ui-monospace, monospace;
   }
   * { box-sizing: border-box; }
@@ -46,487 +33,176 @@
     line-height: 1.6;
   }
 
-  /* ───── 상단 띠 ───── */
   .hero {
     background-color: var(--ink);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='220'%3E%3Cg fill='white' fill-opacity='.075' font-family='serif' font-size='30'%3E%3Ctext x='18' y='52' transform='rotate(-14 18 52)'%3E가%3C/text%3E%3Ctext x='120' y='34' transform='rotate(9 120 34)'%3ED%3C/text%3E%3Ctext x='214' y='70' transform='rotate(-6 214 70)'%3E듸%3C/text%3E%3Ctext x='62' y='128' transform='rotate(12 62 128)'%3EQ%3C/text%3E%3Ctext x='168' y='150' transform='rotate(-10 168 150)'%3E솔%3C/text%3E%3Ctext x='254' y='196' transform='rotate(7 254 196)'%3Ek%3C/text%3E%3Ctext x='24' y='202' transform='rotate(-8 24 202)'%3E밤%3C/text%3E%3Ctext x='112' y='206' transform='rotate(14 112 206)'%3Ez%3C/text%3E%3C/g%3E%3C/svg%3E");
     color: #fff;
-    padding: 56px 16px 52px;
+    padding: 48px 16px 44px;
   }
   .hero-in { max-width: 960px; margin: 0 auto; }
   .hero h1 {
     margin: 0;
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(2.1rem, 6.4vw, 3.6rem);
-    line-height: 1.15;
-    letter-spacing: .01em;
+    font-size: clamp(2rem, 5.6vw, 3.2rem);
+    line-height: 1.2;
   }
-  .hero h1 .mix { color: var(--moon); }
-  .hero h1 .done { color: #fff; }
-  .hero p { margin: 14px 0 0; color: #c9cffa; font-size: 1.1rem; }
+  .hero p { margin: 12px 0 0; color: #c9cffa; font-size: 1.1rem; }
 
-  /* ───── 본문 ───── */
-  .wrap { max-width: 960px; margin: 0 auto; padding: 30px 16px 72px; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 16px 72px; }
 
-  .intro { margin: 0 0 22px; }
-  .rules { margin: 0; padding: 0; display: grid; gap: 6px; }
-  .rules div { display: flex; gap: 12px; align-items: baseline; }
-  .rules dt {
-    flex: none; min-width: 3.2em;
-    font-family: var(--display); color: var(--ink-2);
+  .frame {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 8px 28px rgba(28, 36, 85, .10);
   }
-  .rules dd { margin: 0; }
-  .note { margin: 10px 0 0; font-size: .94rem; color: var(--muted); }
-
-  details.chart { margin-top: 14px; }
-  details.chart summary {
-    display: inline-block; cursor: pointer;
-    color: var(--ink-2); font-family: var(--display);
-    border-bottom: 2px dotted var(--ink-2);
+  .frame iframe {
+    display: block; width: 100%;
+    height: clamp(420px, 68vh, 760px);
+    border: 0; border-radius: 10px;
+    background: var(--stub);
   }
-  details.chart summary:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
-  .chart-scroll { overflow-x: auto; margin-top: 12px; padding-bottom: 4px; }
-  .alpha {
+  .fallback { margin: 12px 4px 0; font-size: .95rem; color: var(--muted); }
+  .fallback a { color: var(--ink-2); text-underline-offset: 3px; }
+  a:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; border-radius: 4px; }
+
+  /* 번호 입력기 */
+  .lock {
+    margin-top: 28px;
     display: grid;
-    grid-template-columns: 3.4em repeat(26, minmax(1.7em, 1fr));
-    min-width: 760px;
-    font-family: var(--type); font-size: .95rem; text-align: center;
-    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    grid-template-columns: 1fr auto;
+    gap: 6px 28px;
+    align-items: center;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 24px;
   }
-  .alpha span { padding: 5px 0; }
-  .alpha .lab { font-family: var(--body); font-size: .85rem; text-align: left; padding-left: 10px; align-self: center; }
-  .alpha .top { background: var(--paper); }
-  .alpha .bot { background: var(--ink); color: #fff; }
-  .alpha .bot.lab { color: #c9cffa; }
-
-  /* ───── 문제 표 ───── */
-  .sheet { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 12px; }
-  .sheet .c-no { width: 84px; }
-  .sheet .c-ans { width: 40%; }
-  .sheet thead th {
-    text-align: left; font-weight: 400; font-size: .92rem;
-    color: var(--muted); padding: 0 18px;
-  }
-  .sheet thead th:first-child { text-align: center; padding: 0; }
-
-  .sheet tbody tr {
-    --cell-bg: var(--paper);
-    --cell-line: var(--line);
-    --stub-bg: var(--stub);
-    --stub-ink: var(--ink);
-  }
-  .sheet tbody tr:focus-within { --cell-line: #98a2e2; }
-  .sheet tbody tr.solved {
-    --cell-bg: #f2faf6;
-    --cell-line: #b5e0cf;
-    --stub-bg: var(--mint-soft);
-    --stub-ink: var(--mint);
-  }
-  .sheet td {
-    background: var(--cell-bg);
-    border-top: 1px solid var(--cell-line);
-    border-bottom: 1px solid var(--cell-line);
-    padding: 18px;
-    vertical-align: middle;
-    transition: background-color .2s, border-color .2s;
-  }
-  .sheet td.stub {
-    background: var(--stub-bg);
-    border-left: 1px solid var(--cell-line);
-    border-right: 2px dashed var(--cell-line);
-    border-radius: 16px 0 0 16px;
-    padding: 18px 0;
-    text-align: center;
-    color: var(--stub-ink);
-  }
-  .sheet td.answer-cell {
-    border-right: 1px solid var(--cell-line);
-    border-radius: 0 16px 16px 0;
-  }
-  .no { font-family: var(--display); font-size: 1.7rem; line-height: 1; }
-  .no svg { width: 28px; height: 28px; vertical-align: middle; }
-
-  .cipher { font-size: 1.15rem; line-height: 1.8; letter-spacing: .05em; word-break: keep-all; overflow-wrap: anywhere; }
-  .cipher.latin { font-family: var(--type); font-size: 1rem; line-height: 1.7; letter-spacing: .03em; }
-
-  .answer { display: flex; gap: 8px; align-items: center; }
-  .answer input {
-    flex: 1; min-width: 0; height: 46px;
+  .lock h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.45rem; }
+  .lock .help { margin: 0; color: var(--muted); font-size: .98rem; }
+  .lock form { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: 8px; align-items: center; }
+  .lock input {
+    width: 11.5em; height: 52px;
     background: #f6f7fd;
     border: 2px solid #c8cff0;
     border-radius: 12px;
     color: var(--ink);
-    padding: 0 14px;
-    font: inherit; font-size: 1.02rem;
+    text-align: center;
+    font-family: var(--type); font-size: 1.5rem; letter-spacing: .4em;
+    padding: 0 0 0 .4em;
   }
-  .answer input::placeholder { color: #8e97c4; }
-  .answer input:disabled { background: #e3f5ec; border-color: #9fd6bf; color: #17694f; opacity: 1; }
-  .answer button {
-    height: 46px; padding: 0 20px;
+  .lock input::placeholder { color: #aab2d8; letter-spacing: .4em; }
+  .lock button {
+    height: 52px; padding: 0 26px;
     background: var(--ink); color: #fff;
     border: 0; border-radius: 12px;
-    font-family: var(--display); font-size: 1.05rem;
-    cursor: pointer; white-space: nowrap;
+    font-family: var(--display); font-size: 1.1rem; cursor: pointer;
     transition: background-color .15s, transform .05s;
   }
-  .answer button:hover:not(:disabled) { background: var(--ink-2); }
-  .answer button:active:not(:disabled) { transform: translateY(1px); }
-  .answer button:disabled { background: var(--mint); cursor: default; }
+  .lock button:hover:not(:disabled) { background: var(--ink-2); }
+  .lock button:active:not(:disabled) { transform: translateY(1px); }
+  .lock button:disabled { background: var(--mint); cursor: default; }
   input:focus-visible, button:focus-visible { outline: 3px solid var(--moon); outline-offset: 2px; }
+  .lock.bad input { border-color: var(--rose); }
   .shake { animation: shake .35s; }
   @keyframes shake {
     20% { transform: translateX(-6px); } 40% { transform: translateX(6px); }
     60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
   }
+  .msg { grid-column: 1 / -1; min-height: 1.6em; margin: 6px 0 0; font-size: .98rem; }
+  .msg.bad { color: var(--rose); }
+  .msg.good { color: var(--mint); font-family: var(--display); font-size: 1.1rem; }
 
-  .state { padding: 36px 20px; text-align: center; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
-  .state strong { display: block; margin-bottom: 6px; color: var(--rose); font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
-  .state code { background: var(--stub); padding: 2px 6px; border-radius: 4px; font-family: var(--type); }
-  .state[hidden] { display: none; }
-
-  /* ───── 모달 ───── */
-  .overlay {
-    position: fixed; inset: 0; z-index: 10;
-    background: rgba(28, 36, 85, .55);
-    backdrop-filter: blur(3px);
-    display: flex; align-items: center; justify-content: center; padding: 16px;
-  }
-  .overlay[hidden] { display: none; }
-  .modal {
-    width: min(460px, 100%);
-    background: var(--paper);
-    border-radius: 22px;
-    padding: 30px 28px 26px;
-    text-align: center;
-    box-shadow: 0 18px 50px rgba(20, 26, 66, .4);
-    animation: pop .2s ease-out;
-  }
-  .modal .icon {
-    width: 62px; height: 62px; margin: 0 auto 12px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--mint); color: #fff;
-  }
-  .modal.wrong .icon { background: var(--rose); }
-  .modal .icon svg { width: 32px; height: 32px; }
-  .modal h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--mint); }
-  .modal.wrong h2 { color: var(--rose); }
-  .modal .msg { margin: 4px 0 0; color: var(--muted); }
-  .modal .detail { margin-top: 18px; padding: 18px 18px 14px; background: var(--stub); border-radius: 14px; }
-  .modal .detail:empty { display: none; }
-  .modal .quote { margin: 0; font-family: var(--quote); font-size: 1.18rem; line-height: 1.8; text-wrap: balance; color: var(--ink); }
-  .modal .work { margin: 8px 0 0; font-size: .95rem; color: var(--muted); }
-  .modal .work.en { font-style: italic; }
-  .modal .trans { margin: 10px 0 0; padding-top: 10px; border-top: 1px dashed var(--line); font-size: .97rem; color: var(--ink-2); }
-  .modal button {
-    margin-top: 20px; height: 44px; padding: 0 34px;
-    background: var(--ink); color: #fff;
-    border: 0; border-radius: 12px;
-    font-family: var(--display); font-size: 1.05rem; cursor: pointer;
-  }
-  .modal button:hover { background: var(--ink-2); }
-  @keyframes pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-  /* ───── 모바일 ───── */
   @media (max-width: 680px) {
-    .hero { padding: 40px 16px 36px; }
-    .wrap { padding-top: 24px; }
-    .rules div { flex-direction: column; gap: 0; }
-    .sheet, .sheet tbody { display: block; }
-    .sheet thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    .sheet tbody tr {
-      display: grid; grid-template-columns: 54px 1fr;
-      margin-bottom: 12px;
-      background: var(--cell-bg);
-      border: 1px solid var(--cell-line);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    .sheet td { background: none; border: 0; border-radius: 0; padding: 14px 14px 2px; }
-    .sheet td.stub {
-      grid-row: 1 / span 2;
-      background: var(--stub-bg);
-      border-right: 2px dashed var(--cell-line);
-      padding: 14px 0 0;
-    }
-    .sheet td.cipher-cell { grid-column: 2; }
-    .sheet td.answer-cell { grid-column: 2; padding-bottom: 16px; }
-    .answer { flex-direction: column; align-items: stretch; }
-    .answer input { flex: none; }
+    .hero { padding: 36px 16px 32px; }
+    .lock { grid-template-columns: minmax(0, 1fr); padding: 18px; }
+    .lock form { grid-row: auto; grid-column: 1; margin-top: 8px; }
+    .lock input { flex: 1; width: auto; min-width: 0; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .modal, .shake { animation: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
 </style>
 </head>
 <body>
 <header class="hero">
   <div class="hero-in">
-    <h1 id="title" aria-label="동화 명대사 암호 퀴즈"><span id="title-text" aria-hidden="true">동화 명대사 암호 퀴즈</span></h1>
-    <p id="subtitle">암호를 풀어 동화 속 명대사를 찾아보세요</p>
+    <h1>먼저 자료를 확인하세요</h1>
+    <p>자료 속에서 번호를 찾아 아래에 입력하면 퀴즈로 넘어가요</p>
   </div>
 </header>
 
 <div class="wrap">
-  <section class="intro" aria-label="푸는 방법">
-    <dl class="rules" id="rules"></dl>
-    <p class="note">띄어쓰기·대소문자·문장부호는 달라도 정답으로 인정돼요.</p>
-    <details class="chart" id="chart" hidden>
-      <summary>시저 암호 표 보기</summary>
-      <div class="chart-scroll"><div class="alpha" id="alpha" role="img" aria-label="윗줄 알파벳이 아랫줄 알파벳으로 바뀌는 시저 암호 표"></div></div>
-    </details>
+  <section class="frame" aria-label="자료">
+    <iframe id="doc" title="확인할 자료" src="https://drive.google.com/file/d/1dqeiXi1mKRa4g9WYZ11zEuZi2NpFGfJg/preview" allow="autoplay; fullscreen" loading="eager"></iframe>
+    <p class="fallback">자료가 보이지 않으면 <a href="https://drive.google.com/file/d/1dqeiXi1mKRa4g9WYZ11zEuZi2NpFGfJg/view?usp=drive_link" target="_blank" rel="noopener">새 창에서 열기</a></p>
   </section>
 
-  <main>
-    <table class="sheet">
-      <colgroup><col class="c-no"><col><col class="c-ans"></colgroup>
-      <thead>
-        <tr><th>번호</th><th>암호</th><th>정답</th></tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
-    <div class="state" id="state">문제를 불러오는 중…</div>
-  </main>
-</div>
-
-<div class="overlay" id="overlay" hidden>
-  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="icon" id="modal-icon" aria-hidden="true"></div>
-    <h2 id="modal-title"></h2>
-    <p class="msg" id="modal-msg"></p>
-    <div id="modal-detail" class="detail"></div>
-    <button type="button" id="modal-close">확인</button>
-  </div>
+  <section class="lock" id="lock" aria-labelledby="lock-title">
+    <h2 id="lock-title">번호 입력</h2>
+    <p class="help">자료에서 찾은 5자리 숫자를 입력하세요.</p>
+    <form id="form" autocomplete="off">
+      <input id="code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="•••••" aria-label="5자리 번호" aria-describedby="msg">
+      <button type="submit" id="go">입장</button>
+    </form>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </section>
 </div>
 
 <script>
-const ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-const ICON_NG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-
-// 공백·문장부호·대소문자 차이는 무시하고 비교
-const normalize = s => s.normalize("NFC").toLowerCase().replace(/[\s\p{P}\p{S}]/gu, "");
+// 브라우저에서만 확인하는 간단한 잠금이에요. 번호 자체는 코드에 적혀 있지 않지만, 보안 장치는 아니에요.
+const NEXT = "index.html";
+const TARGET = 4156579795688929;
+const cyrb53 = (str, seed = 7) => {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
 
 const $ = id => document.getElementById(id);
-const rowsEl = $("rows"), stateEl = $("state");
-const overlay = $("overlay"), modal = $("modal");
-let lastFocus = null;
+const input = $("code"), msg = $("msg"), lock = $("lock"), go = $("go");
 
-/* ── 제목: 섞인 글자가 제자리를 찾아가는 연출 (애너그램 풀이) ── */
-let titleTimer = null;
-function unscrambleTitle() {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const el = $("title-text");
-  const target = [...el.textContent];
-  const slots = target.map((c, i) => i).filter(i => target[i] !== " ");
-  if (slots.length < 3) return;
+input.addEventListener("input", () => {
+  input.value = input.value.replace(/\D/g, "").slice(0, 5);
+  lock.classList.remove("bad");
+  msg.textContent = "";
+  msg.className = "msg";
+});
 
-  const cur = target.slice();
-  const letters = slots.map(i => target[i]);
-  for (let n = 0; n < 20; n++) {               // 원문과 다르게 섞기
-    for (let i = letters.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [letters[i], letters[j]] = [letters[j], letters[i]];
-    }
-    if (letters.some((c, k) => c !== target[slots[k]])) break;
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = input.value.trim();
+  if (v.length < 5) {
+    msg.className = "msg bad";
+    msg.textContent = "5자리 숫자를 모두 입력해 주세요.";
+    input.focus();
+    return;
   }
-  slots.forEach((pos, k) => { cur[pos] = letters[k]; });
-
-  const paint = fixed => {
-    el.textContent = "";
-    target.forEach((_, i) => {
-      const s = document.createElement("span");
-      s.textContent = cur[i];
-      s.className = target[i] === " " || slots.indexOf(i) < fixed ? "done" : "mix";
-      el.appendChild(s);
-    });
-  };
-  let k = 0;
-  paint(0);
-  titleTimer = setInterval(() => {
-    const pos = slots[k];
-    const j = slots.find(p => slots.indexOf(p) >= k && cur[p] === target[pos]);
-    [cur[pos], cur[j]] = [cur[j], cur[pos]];
-    k++;
-    paint(k);
-    if (k >= slots.length) {
-      clearInterval(titleTimer);
-      titleTimer = null;
-      el.textContent = target.join("");
-    }
-  }, 95);
-}
-
-/* ── 시저 암호 표 ── */
-function buildAlpha(shift) {
-  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const box = $("alpha");
-  box.textContent = "";
-  const row = (label, letters, cls) => {
-    const l = document.createElement("span");
-    l.className = "lab " + cls;
-    l.textContent = label;
-    box.appendChild(l);
-    for (const c of letters) {
-      const s = document.createElement("span");
-      s.className = cls;
-      s.textContent = c;
-      box.appendChild(s);
-    }
-  };
-  row("원래", A, "top");
-  row("암호", A.slice(shift) + A.slice(0, shift), "bot");
-  $("chart").hidden = false;
-}
-
-/* ── 모달 ── */
-function openModal(ok, item) {
-  modal.classList.toggle("wrong", !ok);
-  $("modal-icon").innerHTML = ok ? ICON_OK : ICON_NG;
-  $("modal-title").textContent = ok ? "정답입니다!" : "오답입니다";
-  $("modal-msg").textContent = ok ? "원래 문장을 정확히 맞혔어요." : "다시 한 번 도전해 보세요!";
-  const detail = $("modal-detail");
-  detail.textContent = "";
-  if (ok) {
-    const q = document.createElement("p");
-    q.className = "quote";
-    q.textContent = item.decrypted;
-    const w = document.createElement("p");
-    w.className = "work" + (item.language === "en" ? " en" : "");
-    w.textContent = item.language === "en" ? item.work : `『${item.work}』`;
-    detail.append(q, w);
-    if (item.translation) {
-      const t = document.createElement("p");
-      t.className = "trans";
-      t.textContent = item.translation;
-      detail.appendChild(t);
-    }
-  }
-  overlay.hidden = false;
-  $("modal-close").focus();
-}
-
-function closeModal() {
-  overlay.hidden = true;
-  if (lastFocus) lastFocus.focus();
-}
-
-function check(item, tr, input, btn, no) {
-  if (!normalize(input.value)) { input.focus(); return; }
-  lastFocus = input;
-  const ok = normalize(input.value) === normalize(item.decrypted);
-  if (ok) {
-    tr.classList.add("solved");
-    input.value = item.decrypted;
+  if (cyrb53(v) === TARGET) {
+    try { sessionStorage.setItem("quiz-pass", "1"); } catch (err) { /* 저장이 막혀도 이동은 시도 */ }
+    msg.className = "msg good";
+    msg.textContent = "통과! 퀴즈로 이동합니다…";
     input.disabled = true;
-    btn.disabled = true;
-    no.innerHTML = ICON_OK;
-    lastFocus = null;
+    go.disabled = true;
+    setTimeout(() => { location.href = NEXT; }, 700);
   } else {
+    lock.classList.add("bad");
+    msg.className = "msg bad";
+    msg.textContent = "번호가 맞지 않아요. 자료에서 다시 찾아보세요.";
     input.classList.remove("shake");
     void input.offsetWidth;
     input.classList.add("shake");
+    input.select();
   }
-  openModal(ok, item);
-}
-
-/* ── 문제 표 ── */
-function render(data) {
-  document.title = data.title || document.title;
-  if (data.subtitle) $("subtitle").textContent = data.subtitle;
-  if (data.title && data.title !== $("title").getAttribute("aria-label")) {
-    clearInterval(titleTimer);
-    $("title").setAttribute("aria-label", data.title);
-    $("title-text").textContent = data.title;
-  }
-
-  const rules = $("rules");
-  for (const [label, text] of [["한글", data.rules?.korean], ["영문", data.rules?.english]]) {
-    if (!text) continue;
-    const row = document.createElement("div");
-    const dt = document.createElement("dt");
-    dt.textContent = label;
-    const dd = document.createElement("dd");
-    dd.textContent = text;
-    row.append(dt, dd);
-    rules.appendChild(row);
-  }
-  if (data.items.some(it => it.method === "caesar")) {
-    buildAlpha(data.rules?.caesar_shift ?? data.items.find(it => it.shift)?.shift ?? 3);
-  }
-
-  data.items.forEach((item, i) => {
-    const n = item.id ?? i + 1;
-    const tr = document.createElement("tr");
-
-    const tdNo = document.createElement("td");
-    tdNo.className = "stub";
-    const no = document.createElement("span");
-    no.className = "no";
-    no.textContent = n;
-    tdNo.appendChild(no);
-
-    const tdCipher = document.createElement("td");
-    tdCipher.className = "cipher-cell";
-    const cipher = document.createElement("div");
-    cipher.className = "cipher" + (item.language === "en" ? " latin" : "");
-    cipher.textContent = item.encrypted;
-    tdCipher.appendChild(cipher);
-
-    const tdAns = document.createElement("td");
-    tdAns.className = "answer-cell";
-    const box = document.createElement("div");
-    box.className = "answer";
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "정답 입력";
-    input.autocomplete = "off";
-    input.spellcheck = false;
-    input.setAttribute("aria-label", `${n}번 정답 입력`);
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = "확인";
-    btn.addEventListener("click", () => check(item, tr, input, btn, no));
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.isComposing) {
-        e.preventDefault(); // 같은 Enter가 모달의 닫기 버튼까지 눌리는 것을 방지
-        check(item, tr, input, btn, no);
-      }
-    });
-    box.append(input, btn);
-    tdAns.appendChild(box);
-
-    tr.append(tdNo, tdCipher, tdAns);
-    rowsEl.appendChild(tr);
-  });
-  stateEl.hidden = true;
-}
-
-function showError(err) {
-  stateEl.textContent = "";
-  const s = document.createElement("strong");
-  s.textContent = "문제를 불러오지 못했어요.";
-  const p = document.createElement("div");
-  p.append("index.html과 같은 위치의 ");
-  const c = document.createElement("code");
-  c.textContent = "data.json";
-  p.append(c, " 파일을 확인해 주세요. 파일을 더블클릭해서 열면 브라우저가 막으니, GitHub Pages나 로컬 서버(");
-  const c2 = document.createElement("code");
-  c2.textContent = "python -m http.server";
-  p.append(c2, ")로 열어 주세요.");
-  stateEl.append(s, p);
-  console.error(err);
-}
-
-unscrambleTitle();
-fetch("data.json", { cache: "no-cache" })
-  .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
-  .then(render)
-  .catch(showError);
-
-$("modal-close").addEventListener("click", closeModal);
-overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !overlay.hidden) closeModal(); });
+});
 </script>
 </body>
 </html>
