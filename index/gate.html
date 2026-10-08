@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자료 확인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1c2455;
+    --ink-2: #2f3b86;
+    --mist: #e8ebf8;
+    --paper: #fffdf9;
+    --stub: #f0f2fc;
+    --line: #d3d8f0;
+    --muted: #5b6492;
+    --moon: #ffc94d;
+    --mint: #2a9d78;
+    --rose: #d94f6b;
+    --display: "Jua", "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    --body: "Gowun Dodum", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    --type: "Courier Prime", "Courier New", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--mist);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .hero {
+    background-color: var(--ink);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='220'%3E%3Cg fill='white' fill-opacity='.075' font-family='serif' font-size='30'%3E%3Ctext x='18' y='52' transform='rotate(-14 18 52)'%3E가%3C/text%3E%3Ctext x='120' y='34' transform='rotate(9 120 34)'%3ED%3C/text%3E%3Ctext x='214' y='70' transform='rotate(-6 214 70)'%3E듸%3C/text%3E%3Ctext x='62' y='128' transform='rotate(12 62 128)'%3EQ%3C/text%3E%3Ctext x='168' y='150' transform='rotate(-10 168 150)'%3E솔%3C/text%3E%3Ctext x='254' y='196' transform='rotate(7 254 196)'%3Ek%3C/text%3E%3Ctext x='24' y='202' transform='rotate(-8 24 202)'%3E밤%3C/text%3E%3Ctext x='112' y='206' transform='rotate(14 112 206)'%3Ez%3C/text%3E%3C/g%3E%3C/svg%3E");
+    color: #fff;
+    padding: 48px 16px 44px;
+  }
+  .hero-in { max-width: 960px; margin: 0 auto; }
+  .hero h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2rem, 5.6vw, 3.2rem);
+    line-height: 1.2;
+  }
+  .hero p { margin: 12px 0 0; color: #c9cffa; font-size: 1.1rem; }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 16px 72px; }
+
+  .frame {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 8px 28px rgba(28, 36, 85, .10);
+  }
+  .frame iframe {
+    display: block; width: 100%;
+    height: clamp(420px, 68vh, 760px);
+    border: 0; border-radius: 10px;
+    background: var(--stub);
+  }
+  .fallback { margin: 12px 4px 0; font-size: .95rem; color: var(--muted); }
+  .fallback a { color: var(--ink-2); text-underline-offset: 3px; }
+  a:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; border-radius: 4px; }
+
+  /* 번호 입력기 */
+  .lock {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 28px;
+    align-items: center;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 24px;
+  }
+  .lock h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.45rem; }
+  .lock .help { margin: 0; color: var(--muted); font-size: .98rem; }
+  .lock form { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: 8px; align-items: center; }
+  .lock input {
+    width: 11.5em; height: 52px;
+    background: #f6f7fd;
+    border: 2px solid #c8cff0;
+    border-radius: 12px;
+    color: var(--ink);
+    text-align: center;
+    font-family: var(--type); font-size: 1.5rem; letter-spacing: .4em;
+    padding: 0 0 0 .4em;
+  }
+  .lock input::placeholder { color: #aab2d8; letter-spacing: .4em; }
+  .lock button {
+    height: 52px; padding: 0 26px;
+    background: var(--ink); color: #fff;
+    border: 0; border-radius: 12px;
+    font-family: var(--display); font-size: 1.1rem; cursor: pointer;
+    transition: background-color .15s, transform .05s;
+  }
+  .lock button:hover:not(:disabled) { background: var(--ink-2); }
+  .lock button:active:not(:disabled) { transform: translateY(1px); }
+  .lock button:disabled { background: var(--mint); cursor: default; }
+  input:focus-visible, button:focus-visible { outline: 3px solid var(--moon); outline-offset: 2px; }
+  .lock.bad input { border-color: var(--rose); }
+  .shake { animation: shake .35s; }
+  @keyframes shake {
+    20% { transform: translateX(-6px); } 40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
+  }
+  .msg { grid-column: 1 / -1; min-height: 1.6em; margin: 6px 0 0; font-size: .98rem; }
+  .msg.bad { color: var(--rose); }
+  .msg.good { color: var(--mint); font-family: var(--display); font-size: 1.1rem; }
+
+  @media (max-width: 680px) {
+    .hero { padding: 36px 16px 32px; }
+    .lock { grid-template-columns: minmax(0, 1fr); padding: 18px; }
+    .lock form { grid-row: auto; grid-column: 1; margin-top: 8px; }
+    .lock input { flex: 1; width: auto; min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <h1>먼저 자료를 확인하세요</h1>
+    <p>자료 속에서 번호를 찾아 아래에 입력하면 퀴즈로 넘어가요</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="frame" aria-label="자료">
+    <iframe id="doc" title="확인할 자료" src="https://drive.google.com/file/d/1dqeiXi1mKRa4g9WYZ11zEuZi2NpFGfJg/preview" allow="autoplay; fullscreen" loading="eager"></iframe>
+    <p class="fallback">자료가 보이지 않으면 <a href="https://drive.google.com/file/d/1dqeiXi1mKRa4g9WYZ11zEuZi2NpFGfJg/view?usp=drive_link" target="_blank" rel="noopener">새 창에서 열기</a></p>
+  </section>
+
+  <section class="lock" id="lock" aria-labelledby="lock-title">
+    <h2 id="lock-title">번호 입력</h2>
+    <p class="help">자료에서 찾은 5자리 숫자를 입력하세요.</p>
+    <form id="form" autocomplete="off">
+      <input id="code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="•••••" aria-label="5자리 번호" aria-describedby="msg">
+      <button type="submit" id="go">입장</button>
+    </form>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </section>
+</div>
+
+<script>
+// 브라우저에서만 확인하는 간단한 잠금이에요. 번호 자체는 코드에 적혀 있지 않지만, 보안 장치는 아니에요.
+const NEXT = "index.html";
+const TARGET = 4156579795688929;
+const cyrb53 = (str, seed = 7) => {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
+
+const $ = id => document.getElementById(id);
+const input = $("code"), msg = $("msg"), lock = $("lock"), go = $("go");
+
+input.addEventListener("input", () => {
+  input.value = input.value.replace(/\D/g, "").slice(0, 5);
+  lock.classList.remove("bad");
+  msg.textContent = "";
+  msg.className = "msg";
+});
+
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = input.value.trim();
+  if (v.length < 5) {
+    msg.className = "msg bad";
+    msg.textContent = "5자리 숫자를 모두 입력해 주세요.";
+    input.focus();
+    return;
+  }
+  if (cyrb53(v) === TARGET) {
+    try { sessionStorage.setItem("quiz-pass", "1"); } catch (err) { /* 저장이 막혀도 이동은 시도 */ }
+    msg.className = "msg good";
+    msg.textContent = "통과! 퀴즈로 이동합니다…";
+    input.disabled = true;
+    go.disabled = true;
+    setTimeout(() => { location.href = NEXT; }, 700);
+  } else {
+    lock.classList.add("bad");
+    msg.className = "msg bad";
+    msg.textContent = "번호가 맞지 않아요. 자료에서 다시 찾아보세요.";
+    input.classList.remove("shake");
+    void input.offsetWidth;
+    input.classList.add("shake");
+    input.select();
+  }
+});
+</script>
+</body>
+</html>
