@@ -103,7 +103,7 @@
   /* ───── 문제 표 ───── */
   .sheet { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 12px; }
   .sheet .c-no { width: 84px; }
-  .sheet .c-ans { width: 40%; }
+  .sheet .c-ans { width: 44%; }
   .sheet thead th {
     text-align: left; font-weight: 400; font-size: .92rem;
     color: var(--muted); padding: 0 18px;
@@ -258,6 +258,122 @@
   @media (prefers-reduced-motion: reduce) {
     .modal, .shake { animation: none; }
   }
+
+  /* ───── 암호 기법 보기 ───── */
+  .techniques {
+    margin-top: 18px;
+    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .techniques-title {
+    margin: 0 0 10px;
+    color: var(--ink-2);
+    font-family: var(--display);
+    font-size: 1.05rem;
+  }
+  .technique-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .technique-card {
+    padding: 12px 13px;
+    background: var(--stub);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .technique-card strong {
+    display: block;
+    color: var(--ink);
+    font-family: var(--display);
+    font-weight: 400;
+    margin-bottom: 3px;
+  }
+  .technique-card span {
+    display: block;
+    color: var(--muted);
+    font-size: .86rem;
+    line-height: 1.45;
+  }
+
+  .answer-fields {
+    display: grid;
+    gap: 8px;
+  }
+  .answer-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .answer-row label {
+    flex: 0 0 58px;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+  .answer-row input,
+  .answer-row select {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    background: #f6f7fd;
+    border: 2px solid #c8cff0;
+    border-radius: 10px;
+    color: var(--ink);
+    padding: 0 11px;
+    font: inherit;
+    font-size: .94rem;
+  }
+  .answer-row select {
+    cursor: pointer;
+  }
+  .answer-row input:disabled,
+  .answer-row select:disabled {
+    background: #e3f5ec;
+    border-color: #9fd6bf;
+    color: #17694f;
+    opacity: 1;
+  }
+  .answer-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .answer-actions button {
+    flex: 1;
+  }
+  .answer-actions .clear-btn {
+    background: #eef0f9;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .answer-actions .clear-btn:hover {
+    background: #e4e7f5;
+  }
+  .work-hint {
+    color: var(--muted);
+    font-size: .78rem;
+    margin-top: 2px;
+  }
+
+  .modal .method {
+    margin: 8px 0 0;
+    font-family: var(--display);
+    color: var(--mint);
+  }
+
+  @media (max-width: 760px) {
+    .technique-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 680px) {
+    .technique-list { grid-template-columns: 1fr; }
+    .answer-row { align-items: stretch; }
+    .answer-row label { flex-basis: 50px; padding-top: 9px; }
+    .answer-actions { flex-direction: column; }
+  }
+
 </style>
 </head>
 <body>
@@ -271,7 +387,13 @@
 <div class="wrap">
   <section class="intro" aria-label="푸는 방법">
     <dl class="rules" id="rules"></dl>
-    <p class="note">띄어쓰기·대소문자·문장부호는 달라도 정답으로 인정돼요.</p>
+    <p class="note">띄어쓰기·대소문자·문장부호는 달라도 정답으로 인정돼요. 작품명은 『』 없이 입력해도 됩니다.</p>
+
+    <section class="techniques" aria-label="암호 기법 보기">
+      <h2 class="techniques-title">암호화 기법 보기</h2>
+      <div class="technique-list" id="technique-list"></div>
+    </section>
+
     <details class="chart" id="chart" hidden>
       <summary>시저 암호 표 보기</summary>
       <div class="chart-scroll"><div class="alpha" id="alpha" role="img" aria-label="윗줄 알파벳이 아랫줄 알파벳으로 바뀌는 시저 암호 표"></div></div>
@@ -282,7 +404,7 @@
     <table class="sheet">
       <colgroup><col class="c-no"><col><col class="c-ans"></colgroup>
       <thead>
-        <tr><th>번호</th><th>암호</th><th>정답</th></tr>
+        <tr><th>번호</th><th>암호</th><th>정답 입력</th></tr>
       </thead>
       <tbody id="rows"></tbody>
     </table>
@@ -306,6 +428,15 @@ const ICON_NG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 
 // 공백·문장부호·대소문자 차이는 무시하고 비교
 const normalize = s => s.normalize("NFC").toLowerCase().replace(/[\s\p{P}\p{S}]/gu, "");
+
+function normalizeWork(s) {
+  return normalize(String(s || "").replace(/^『|』$/g, ""));
+}
+
+function getTechniqueLabel(id) {
+  const item = (window.quizTechniques || []).find(t => t.id === id);
+  return item ? item.label : id;
+}
 
 const $ = id => document.getElementById(id);
 const rowsEl = $("rows"), stateEl = $("state");
@@ -380,11 +511,14 @@ function buildAlpha(shift) {
 }
 
 /* ── 모달 ── */
-function openModal(ok, item) {
+function openModal(ok, item, result = {}) {
   modal.classList.toggle("wrong", !ok);
   $("modal-icon").innerHTML = ok ? ICON_OK : ICON_NG;
   $("modal-title").textContent = ok ? "정답입니다!" : "오답입니다";
-  $("modal-msg").textContent = ok ? "원래 문장을 정확히 맞혔어요." : "다시 한 번 도전해 보세요!";
+  $("modal-msg").textContent = ok
+    ? "복호화 문장, 작품명, 암호 기법을 모두 정확히 맞혔어요."
+    : "복호화 문장·작품명·암호 기법을 모두 확인해 보세요.";
+
   const detail = $("modal-detail");
   detail.textContent = "";
   if (ok) {
@@ -394,7 +528,12 @@ function openModal(ok, item) {
     const w = document.createElement("p");
     w.className = "work" + (item.language === "en" ? " en" : "");
     w.textContent = item.language === "en" ? item.work : `『${item.work}』`;
-    detail.append(q, w);
+
+    const m = document.createElement("p");
+    m.className = "method";
+    m.textContent = `암호 기법: ${getTechniqueLabel(item.method)}`;
+
+    detail.append(q, w, m);
     if (item.translation) {
       const t = document.createElement("p");
       t.className = "trans";
@@ -411,27 +550,51 @@ function closeModal() {
   if (lastFocus) lastFocus.focus();
 }
 
-function check(item, tr, input, btn, no) {
-  if (!normalize(input.value)) { input.focus(); return; }
-  lastFocus = input;
-  const ok = normalize(input.value) === normalize(item.decrypted);
+function check(item, tr, answerInput, workInput, methodSelect, btn, no) {
+  if (!normalize(answerInput.value) || !normalizeWork(workInput.value) || !methodSelect.value) {
+    if (!normalize(answerInput.value)) answerInput.focus();
+    else if (!normalizeWork(workInput.value)) workInput.focus();
+    else methodSelect.focus();
+    return;
+  }
+
+  lastFocus = answerInput;
+
+  const answerOk = normalize(answerInput.value) === normalize(item.decrypted);
+  const workOk = normalizeWork(workInput.value) === normalizeWork(item.work);
+  const methodOk = methodSelect.value === item.method;
+  const ok = answerOk && workOk && methodOk;
+
   if (ok) {
     tr.classList.add("solved");
-    input.value = item.decrypted;
-    input.disabled = true;
+    answerInput.value = item.decrypted;
+    workInput.value = item.work;
+    methodSelect.value = item.method;
+
+    answerInput.disabled = true;
+    workInput.disabled = true;
+    methodSelect.disabled = true;
     btn.disabled = true;
+
     no.innerHTML = ICON_OK;
     lastFocus = null;
   } else {
-    input.classList.remove("shake");
-    void input.offsetWidth;
-    input.classList.add("shake");
+    answerInput.classList.remove("shake");
+    workInput.classList.remove("shake");
+    methodSelect.classList.remove("shake");
+    void answerInput.offsetWidth;
+    answerInput.classList.add("shake");
+    workInput.classList.add("shake");
+    methodSelect.classList.add("shake");
   }
-  openModal(ok, item);
+
+  openModal(ok, item, { answerOk, workOk, methodOk });
 }
 
 /* ── 문제 표 ── */
 function render(data) {
+  rowsEl.textContent = "";
+  stateEl.hidden = false;
   document.title = data.title || document.title;
   if (data.subtitle) $("subtitle").textContent = data.subtitle;
   if (data.title && data.title !== $("title").getAttribute("aria-label")) {
@@ -441,6 +604,7 @@ function render(data) {
   }
 
   const rules = $("rules");
+  rules.textContent = "";
   for (const [label, text] of [["한글", data.rules?.korean], ["영문", data.rules?.english]]) {
     if (!text) continue;
     const row = document.createElement("div");
@@ -451,6 +615,26 @@ function render(data) {
     row.append(dt, dd);
     rules.appendChild(row);
   }
+
+  window.quizTechniques = Array.isArray(data.techniques) ? data.techniques : [];
+
+  const techniqueList = $("technique-list");
+  techniqueList.textContent = "";
+
+  window.quizTechniques.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "technique-card";
+
+    const strong = document.createElement("strong");
+    strong.textContent = t.label;
+
+    const span = document.createElement("span");
+    span.textContent = String(t.detail || "").replace("{shift}", data.rules?.caesar_shift ?? data.items.find(it => it.shift)?.shift ?? 3);
+
+    card.append(strong, span);
+    techniqueList.appendChild(card);
+  });
+
   if (data.items.some(it => it.method === "caesar")) {
     buildAlpha(data.rules?.caesar_shift ?? data.items.find(it => it.shift)?.shift ?? 3);
   }
@@ -475,30 +659,101 @@ function render(data) {
 
     const tdAns = document.createElement("td");
     tdAns.className = "answer-cell";
-    const box = document.createElement("div");
-    box.className = "answer";
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "정답 입력";
-    input.autocomplete = "off";
-    input.spellcheck = false;
-    input.setAttribute("aria-label", `${n}번 정답 입력`);
+
+    const fields = document.createElement("div");
+    fields.className = "answer-fields";
+
+    // 복호화 문장
+    const answerRow = document.createElement("div");
+    answerRow.className = "answer-row";
+    const answerLabel = document.createElement("label");
+    answerLabel.textContent = "문장";
+    const answerInput = document.createElement("input");
+    answerInput.type = "text";
+    answerInput.placeholder = "복호화한 문장";
+    answerInput.autocomplete = "off";
+    answerInput.spellcheck = false;
+    answerInput.setAttribute("aria-label", `${n}번 복호화 문장 입력`);
+    answerRow.append(answerLabel, answerInput);
+
+    // 작품명
+    const workRow = document.createElement("div");
+    workRow.className = "answer-row";
+    const workLabel = document.createElement("label");
+    workLabel.textContent = "작품";
+    const workInput = document.createElement("input");
+    workInput.type = "text";
+    workInput.placeholder = "작품명";
+    workInput.autocomplete = "off";
+    workInput.spellcheck = false;
+    workInput.setAttribute("aria-label", `${n}번 작품명 입력`);
+
+    const workHint = document.createElement("div");
+    workHint.className = "work-hint";
+    workHint.textContent = "예: 어린 왕자 / The Little Prince / 아낌없이 주는 나무";
+    workRow.append(workLabel, workInput);
+
+    // 암호 기법
+    const methodRow = document.createElement("div");
+    methodRow.className = "answer-row";
+    const methodLabel = document.createElement("label");
+    methodLabel.textContent = "기법";
+    const methodSelect = document.createElement("select");
+    methodSelect.setAttribute("aria-label", `${n}번 암호 기법 선택`);
+
+    const emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.textContent = "암호 기법 선택";
+    methodSelect.appendChild(emptyOpt);
+
+    window.quizTechniques.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.id;
+      opt.textContent = t.label;
+      methodSelect.appendChild(opt);
+    });
+    methodRow.append(methodLabel, methodSelect);
+
+    const actions = document.createElement("div");
+    actions.className = "answer-actions";
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = "확인";
-    btn.addEventListener("click", () => check(item, tr, input, btn, no));
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.isComposing) {
-        e.preventDefault(); // 같은 Enter가 모달의 닫기 버튼까지 눌리는 것을 방지
-        check(item, tr, input, btn, no);
-      }
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "clear-btn";
+    clearBtn.textContent = "지우기";
+    clearBtn.addEventListener("click", () => {
+      if (answerInput.disabled) return;
+      answerInput.value = "";
+      workInput.value = "";
+      methodSelect.value = "";
+      answerInput.focus();
     });
-    box.append(input, btn);
-    tdAns.appendChild(box);
+
+    btn.addEventListener("click", () =>
+      check(item, tr, answerInput, workInput, methodSelect, btn, no)
+    );
+
+    [answerInput, workInput, methodSelect].forEach(el => {
+      el.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.isComposing) {
+          e.preventDefault();
+          check(item, tr, answerInput, workInput, methodSelect, btn, no);
+        }
+      });
+    });
+
+    actions.append(btn, clearBtn);
+    fields.append(answerRow, workRow, workHint, methodRow, actions);
+    tdAns.appendChild(fields);
 
     tr.append(tdNo, tdCipher, tdAns);
     rowsEl.appendChild(tr);
   });
+
   stateEl.hidden = true;
 }
 
